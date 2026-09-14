@@ -1,0 +1,24 @@
+{
+  "name": "ai-router",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AI 模型路由调度层：统一入口 + auto 万能模型 + 规则路由",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "fastify": "^5.2.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "@types/node": "^24.0.0"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

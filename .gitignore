@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+dist/
+**/dist/
+*.tsbuildinfo
+
+# Environment & secrets
+.env
+**/.env
+.env.local
+.env.*.local
+
+# new-api release + data (contains exe, sqlite, channel keys)
+new-api-data/
+
+# Router runtime data (sqlite db)
+router-data/
+**/router-data/
+
+# Logs
+*.log
+**/*.log
+router.err.log
+router.log
+
+# Test artifacts
+test-m5.cjs
+test-route.mjs
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.sw?
+.idea/
+.vscode/*
+!.vscode/extensions.json

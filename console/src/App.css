@@ -1,0 +1,2 @@
+/* 覆盖 Vite 模板多余样式，由 index.css 统管 */
+html, body, #root { height: 100%; }
