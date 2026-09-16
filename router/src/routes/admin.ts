@@ -129,6 +129,7 @@ export function registerAdmin(app: FastifyInstance) {
     'self_evolve_enabled', 'self_evolve_window_days', 'self_evolve_model', 'self_evolve_min_sample',
     'self_evolve_confidence', 'self_evolve_max_changes', 'self_evolve_success_gate',
     'self_evolve_interval_hours', 'self_evolve_trust_ai', 'self_evolve_fallback_code',
+    'self_evolve_explore_enabled', 'self_evolve_explore_rate', 'self_evolve_explore_models',
   ];
   const TUNED_ACTIONS = new Set(['ai_tune', 'ai_guarded_tune', 'code_tune']); // 可回滚的改动类型（排除 rollback 本身）
 

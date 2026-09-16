@@ -145,6 +145,7 @@ export function registerV1(app: FastifyInstance) {
         finalModel: decision.finalModel,
         provider: providerOf(decision.finalModel),
         contextAction,
+        exploreFrom: decision.exploreFrom ?? null,
       };
 
       // 组装上游请求：替换 model，其余原样；截断则用处理后 messages

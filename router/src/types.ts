@@ -85,4 +85,5 @@ export interface RouteDecision {
   reasonNote?: string;
   context: ContextPolicy;
   costDegraded?: boolean; // P2：估算成本超 maxCostUsd，沿 costDegrade 链降级（仅非流式）
+  exploreFrom?: string | null; // L2：在线探索时记录原主模型（探索流量落库标实，供审计与统计）
 }

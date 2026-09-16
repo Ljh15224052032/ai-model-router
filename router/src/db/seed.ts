@@ -115,4 +115,8 @@ export function seed(db: DatabaseSync) {
   s.run('self_evolve_interval_hours', '6');
   s.run('self_evolve_trust_ai', '0'); // 关护栏直信 AI（不推荐）
   s.run('self_evolve_fallback_code', '1'); // AI 不可用时回退纯代码兜底（0=直接跳过）
+  // L2 在线探索（默认关闭；开启后给 tier 主指派小比例分流给候选模型攒样本）
+  s.run('self_evolve_explore_enabled', '0');
+  s.run('self_evolve_explore_rate', '0.05'); // 探索概率（每请求）
+  s.run('self_evolve_explore_models', 'k3,k3-256k'); // 探索候选（逗号分隔，须 enabled）
 }

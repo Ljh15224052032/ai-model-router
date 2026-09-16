@@ -8,6 +8,7 @@ import { isCooled } from './health.ts';
 import { getModelCost } from '../db/models.ts';
 import { getPolicy, getDefaultPolicy } from '../db/policies.ts';
 import { getSetting } from '../db/settings.ts';
+import { maybeExplore } from '../self/explore.ts';
 import type { Action, ContextPolicy, Feature, Policy, RouteDecision } from '../types.ts';
 
 export interface DecisionContext {
@@ -151,9 +152,11 @@ export async function decide(req: DecisionContext): Promise<DecisionOutcome> {
       // tier 首选 + fallback 的 onError/escalate 作为后续链（档位表本身不含链）
       const { messages, action } = await applyContext(req.messages, ctx, { log: !req.dryRun });
       const plan = buildCandidates(fb, tierModel, { features, stream: req.stream ?? false });
+      // L2 在线探索：MVP/I，追加进 tier 决策（不改变候选链）；dryRun(调试) 不探索
+      const exp = req.dryRun ? { model: plan.finalModel, exploredFrom: null } : maybeExplore(plan.finalModel);
       return {
         decision: {
-          finalModel: plan.finalModel,
+          finalModel: exp.model,
           candidates: plan.candidates,
           source: 'tier',
           policyId,
@@ -163,6 +166,7 @@ export async function decide(req: DecisionContext): Promise<DecisionOutcome> {
           reasonNote: fb.reasonNote,
           context: ctx,
           costDegraded: plan.costDegraded,
+          exploreFrom: exp.exploredFrom,
         },
         features,
         contextAction: action,

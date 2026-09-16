@@ -137,7 +137,32 @@ export function SelfEvolve() {
         </Card>
       </div>
 
-      {/* 手动触发 */}
+      {/* 在线探索（L2） */}
+      <div className="mt-4">
+        <Card title="在线探索（L2 小流量）" action={
+          <div className="flex items-center gap-2">
+            {(s.self_evolve_explore_enabled ?? '0') === '1' ? <Tag color="ok">开启</Tag> : <Tag color="dim">关闭</Tag>}
+            <Toggle checked={(s.self_evolve_explore_enabled ?? '0') === '1'} onChange={(v) => set('self_evolve_explore_enabled', v ? '1' : '0')} />
+          </div>
+        }>
+          <p className="text-xs text-dim leading-relaxed">
+            开启后，命中档位表主指派时以低概率分流给候选探索模型（默认 k3/k3-256k），给没用上/数据不足的模型攒样本，供 AI 后续决策；探索流量仍在日志中标实（explored_from），可审计且不影响候选链。关闭状态下不产生任何探索流量。
+          </p>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <div>
+              <div className="mb-1 text-xs text-dim">探索概率（每请求）</div>
+              <Input value={s.self_evolve_explore_rate ?? ''} onChange={(v) => set('self_evolve_explore_rate', v)} type="text" placeholder="0.05" />
+            </div>
+            <div>
+              <div className="mb-1 text-xs text-dim">探索候选模型（逗号分隔）</div>
+              <Input value={s.self_evolve_explore_models ?? ''} onChange={(v) => set('self_evolve_explore_models', v)} type="text" placeholder="k3,k3-256k" />
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-dim/70">代码护栏：候选必须是启用目录内的模型、不能是当前主模型、也不能处于冷却，否则跳过本次探索。</p>
+        </Card>
+      </div>
+
+      {/* 手动运行 */}
       <div className="mt-4">
         <Card title="手动运行">
           <div className="flex items-center gap-3">

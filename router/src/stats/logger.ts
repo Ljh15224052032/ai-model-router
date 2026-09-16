@@ -21,6 +21,7 @@ export interface LogEntry {
   retried?: number; // 重试次数
   orchId?: string; // M9 编排：同一编排请求共享 id（planner/worker/synthesis）
   orchRole?: 'planner' | 'worker' | 'synthesis'; // M9 编排：子调用角色
+  exploreFrom?: string | null; // L2 在线探索：记录探索前的主模型
 }
 
 export function insertLog(e: LogEntry) {
@@ -28,8 +29,8 @@ export function insertLog(e: LogEntry) {
   db.prepare(
     `INSERT INTO request_logs
       (client, requested_model, policy_id, rule_id, route_source, judge_result_json, final_model, provider, context_action,
-       prompt_tokens, completion_tokens, cached_tokens, cost_usd, latency_ms, status, error, degraded, retried, orch_id, orch_role)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       prompt_tokens, completion_tokens, cached_tokens, cost_usd, latency_ms, status, error, degraded, retried, orch_id, orch_role, explored_from)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     e.client ?? null,
     e.requestedModel,
@@ -50,7 +51,8 @@ export function insertLog(e: LogEntry) {
     e.degraded ?? 0,
     e.retried ?? 0,
     e.orchId ?? null,
-    e.orchRole ?? null
+    e.orchRole ?? null,
+    e.exploreFrom ?? null
   );
 }
 

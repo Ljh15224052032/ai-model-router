@@ -100,4 +100,9 @@ function migrate(db: DatabaseSync) {
   if (!logCols.some((c) => c.name === 'orch_role')) {
     db.exec('ALTER TABLE request_logs ADD COLUMN orch_role TEXT');
   }
+  // L2 在线探索：记录探索前的主模型（探索请求 final_model 为候选人，source 仍 tier）
+  const exploreCols = db.prepare('PRAGMA table_info(request_logs)').all() as Array<{ name: string }>;
+  if (!exploreCols.some((c) => c.name === 'explored_from')) {
+    db.exec('ALTER TABLE request_logs ADD COLUMN explored_from TEXT');
+  }
 }
