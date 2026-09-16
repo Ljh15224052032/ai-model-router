@@ -159,6 +159,8 @@ Client / Script
 
 ## 快速开始
 
+> 想省事？把本仓库地址 `https://github.com/Ljh15224052032/ai-model-router` 复制给 AI（如 TraeCode / 你的编程助手），让 AI 参考本 README 直接帮你完成配置、启动与联调，无需手工逐步操作。
+
 **前置**：Node 22.5+（实验性 SQLite 支持）。
 
 1. **启动 new-api**（端口 22222），登录后创建 Kimi / DeepSeek 渠道并填入密钥，在"令牌"页生成一个访问令牌。
