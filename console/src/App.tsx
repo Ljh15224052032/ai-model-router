@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
+import { About } from './pages/About'
 import { Dashboard } from './pages/Dashboard'
 import { Debug } from './pages/Debug'
 import { Logs } from './pages/Logs'
@@ -19,6 +20,7 @@ function App() {
           <Route path="/logs" element={<Logs />} />
           <Route path="/debug" element={<Debug />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/about" element={<About />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
