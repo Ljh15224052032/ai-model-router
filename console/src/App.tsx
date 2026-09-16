@@ -7,6 +7,7 @@ import { Logs } from './pages/Logs'
 import { Models } from './pages/Models'
 import { Policies } from './pages/Policies'
 import { Settings } from './pages/Settings'
+import { SelfEvolve } from './pages/SelfEvolve'
 import './App.css'
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <Route path="/logs" element={<Logs />} />
           <Route path="/debug" element={<Debug />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/self-evolve" element={<SelfEvolve />} />
           <Route path="/about" element={<About />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

@@ -1,5 +1,5 @@
 // 布局：左侧导航 + 主内容（页面切换淡入动效 + 明暗主题切换）
-import { Activity, FlaskConical, FileCog, Gauge, Info, ListOrdered, Moon, Package, Settings, Sun } from 'lucide-react';
+import { Activity, FlaskConical, FileCog, Gauge, Info, ListOrdered, Moon, Package, Settings, Sparkles, Sun } from 'lucide-react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { getTheme, toggleTheme } from '../lib/theme';
@@ -9,6 +9,7 @@ const nav = [
   { to: '/', label: '仪表盘', icon: Gauge, end: true },
   { to: '/policies', label: '路由方案', icon: FileCog },
   { to: '/models', label: '模型库', icon: Package },
+  { to: '/self-evolve', label: '自进化', icon: Sparkles },
   { to: '/logs', label: '请求日志', icon: ListOrdered },
   { to: '/debug', label: '路由调试', icon: FlaskConical },
   { to: '/settings', label: '设置', icon: Settings },

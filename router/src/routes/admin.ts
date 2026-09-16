@@ -13,6 +13,7 @@ import { createReadStream, copyFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Policy } from '../types.ts';
+import { runOptimizer } from '../self/optimizer.ts';
 
 export function registerAdmin(app: FastifyInstance) {
   // .env kimiUsageKey 一次性迁移进 settings（已有额度源配置则跳过）
@@ -121,6 +122,53 @@ export function registerAdmin(app: FastifyInstance) {
     const body = req.body as Record<string, string>;
     for (const [k, v] of Object.entries(body)) setSetting(k, String(v));
     return { success: true };
+  });
+
+  // ---------- 自进化（L1：AI 决策 + 代码护栏，可手动触发/回滚）----------
+  const SELF_KEYS = [
+    'self_evolve_enabled', 'self_evolve_window_days', 'self_evolve_model', 'self_evolve_min_sample',
+    'self_evolve_confidence', 'self_evolve_max_changes', 'self_evolve_success_gate',
+    'self_evolve_interval_hours', 'self_evolve_trust_ai', 'self_evolve_fallback_code',
+  ];
+  const TUNED_ACTIONS = new Set(['ai_tune', 'ai_guarded_tune', 'code_tune']); // 可回滚的改动类型（排除 rollback 本身）
+
+  // 聚合视图：self_evolve_* 设置 + 最近决策历史 + 当前可回滚目标
+  app.get('/api/self-evolve', async () => {
+    const db = getDb();
+    const logs = db
+      .prepare('SELECT id, created_at, action, reason, previous_tiers_json, new_tiers_json FROM optimizer_log ORDER BY id DESC LIMIT 30')
+      .all() as Array<{ id: number; created_at: string; action: string; reason: string | null; previous_tiers_json: string | null; new_tiers_json: string | null }>;
+    // 最近一笔「AI/代码改动」作为回滚目标
+    const target = db
+      .prepare(`SELECT id, created_at, action, previous_tiers_json FROM (SELECT * FROM optimizer_log ORDER BY id DESC) WHERE action IN (${[...TUNED_ACTIONS].map(() => '?').join(',')}) AND previous_tiers_json IS NOT NULL LIMIT 1`)
+      .all(...TUNED_ACTIONS) as Array<{ id: number; created_at: string; action: string; previous_tiers_json: string }>;
+    const settings: Record<string, string> = {};
+    for (const k of SELF_KEYS) {
+      const v = getSetting(k);
+      if (v !== null) settings[k] = v;
+    }
+    return { settings, logs, rollbackTarget: target[0] ?? null };
+  });
+
+  // 手动触发一次自进化（立即运行并回显结果，不阻塞在线路由）
+  app.post('/api/self-evolve/run', async () => {
+    const r = await runOptimizer();
+    return { enabled: r.enabled, ran: r.ran, mode: r.mode, changed: r.changed, rationale: r.rationale, previousJson: r.previousJson, newJson: r.newJson };
+  });
+
+  // 回滚到最近一笔改动之前的档位（全量可回滚）
+  app.post('/api/self-evolve/rollback', async (_req, reply) => {
+    const db = getDb();
+    const target = db
+      .prepare(`SELECT id, action, reason, previous_tiers_json, new_tiers_json FROM (SELECT * FROM optimizer_log ORDER BY id DESC) WHERE action IN (${[...TUNED_ACTIONS].map(() => '?').join(',')}) AND previous_tiers_json IS NOT NULL LIMIT 1`)
+      .all(...TUNED_ACTIONS) as Array<{ id: number; action: string; reason: string | null; previous_tiers_json: string; new_tiers_json: string }>;
+    if (!target.length) return reply.code(404).send({ error: '没有可回滚的自进化记录' });
+    const t = target[0];
+    const current = getSetting('tiers_default_json') ?? '';
+    setSetting('tiers_default_json', t.previous_tiers_json);
+    db.prepare(`INSERT INTO optimizer_log (action, reason, previous_tiers_json, new_tiers_json) VALUES ('rollback', ?, ?, ?)`)
+      .run(`回滚自进化 #{${t.id}}: ${t.reason ?? ''}`, current, t.previous_tiers_json);
+    return { success: true, rolledBackId: t.id, restoredTiers: t.previous_tiers_json };
   });
 
   // ---------- 调试 ----------

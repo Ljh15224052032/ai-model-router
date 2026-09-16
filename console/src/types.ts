@@ -147,3 +147,27 @@ export interface PeriodCost {
   peakCostX2: number;
   totalCost: number;
 }
+
+// 自进化（L1：AI 决策 + 代码护栏）
+export interface SelfEvolveLogRow {
+  id: number;
+  created_at: string;
+  action: string;
+  reason: string | null;
+  previous_tiers_json: string | null;
+  new_tiers_json: string | null;
+}
+export interface SelfEvolveInfo {
+  settings: Record<string, string>;
+  logs: SelfEvolveLogRow[];
+  rollbackTarget: { id: number; created_at: string; action: string; previous_tiers_json: string } | null;
+}
+export interface SelfEvolveRunResp {
+  enabled: boolean;
+  ran: boolean;
+  mode: 'ai' | 'code-fallback' | 'skip' | 'none';
+  changed: number;
+  rationale: string[];
+  previousJson: string | null;
+  newJson: string | null;
+}
