@@ -103,4 +103,10 @@ export function seed(db: DatabaseSync) {
   s.run('retry_on_error', '1');
   s.run('cooldown_fail_threshold', '3');
   s.run('cooldown_seconds', '300');
+  // 自进化 L1（默认关闭；开启后定时微调档位表）
+  s.run('self_evolve_enabled', '0');
+  s.run('self_evolve_window_days', '7');
+  s.run('self_evolve_min_sample', '20');
+  s.run('self_evolve_success_gate', '0.9');
+  s.run('self_evolve_interval_hours', '6');
 }

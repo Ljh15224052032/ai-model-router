@@ -77,6 +77,14 @@ function migrate(db: DatabaseSync) {
       cooled_until INTEGER DEFAULT 0,
       updated_at TEXT DEFAULT (datetime('now'))
     );
+    CREATE TABLE IF NOT EXISTS optimizer_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      created_at TEXT DEFAULT (datetime('now')),
+      action TEXT,
+      reason TEXT,
+      previous_tiers_json TEXT,
+      new_tiers_json TEXT
+    );
   `);
 
   // 列级迁移：旧库补 tiers_json（PRAGMA 检测，幂等）
