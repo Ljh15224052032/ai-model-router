@@ -104,9 +104,15 @@ export function seed(db: DatabaseSync) {
   s.run('cooldown_fail_threshold', '3');
   s.run('cooldown_seconds', '300');
   // 自进化 L1（默认关闭；开启后定时微调档位表）
+  // 决策由 AI(LLM) 分析历史数据产出建议，代码仅做护栏：模型合法性/每轮限量/置信度/样本门槛，全量落 optimizer_log 可回滚
   s.run('self_evolve_enabled', '0');
   s.run('self_evolve_window_days', '7');
-  s.run('self_evolve_min_sample', '20');
-  s.run('self_evolve_success_gate', '0.9');
+  s.run('self_evolve_model', 'deepseek-flash'); // 负责决策的模型
+  s.run('self_evolve_min_sample', '20'); // 某格历史样本数门槛，不足不强改
+  s.run('self_evolve_confidence', '0.7'); // AI 建议的最低置信度
+  s.run('self_evolve_max_changes', '5'); // 每轮最多改几格
+  s.run('self_evolve_success_gate', '0.9'); // 代码兜底的可靠性门槛
   s.run('self_evolve_interval_hours', '6');
+  s.run('self_evolve_trust_ai', '0'); // 关护栏直信 AI（不推荐）
+  s.run('self_evolve_fallback_code', '1'); // AI 不可用时回退纯代码兜底（0=直接跳过）
 }

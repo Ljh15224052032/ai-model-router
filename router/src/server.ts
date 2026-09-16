@@ -22,9 +22,9 @@ function startSelfEvolve() {
       return 6;
     }
   })();
-  const tick = () => {
+  const tick = async () => {
     try {
-      runOptimizer();
+      await runOptimizer();
     } catch (e) {
       console.error('[self] 自进化任务执行失败:', e);
     }
