@@ -391,6 +391,7 @@ export async function runOptimizer(): Promise<OptimizeResult> {
   const totalApplied: AIAppliedChange[] = [];
   const notes: string[] = [];
   let mode: OptimizeResult['mode'] = 'skip';
+  let aiNote = ''; // 本次改动的 AI 一句话说明（【说明】首行）
 
   // A) 尝试 AI 决策
   const aiModel = getSetting('self_evolve_model') || 'deepseek-flash';
@@ -420,6 +421,7 @@ export async function runOptimizer(): Promise<OptimizeResult> {
         if (rejected.length) notes.push(`AI 被护栏拦截 ${rejected.length} 条：` + rejected.join('；'));
         if (totalApplied.length) {
           mode = 'ai';
+          aiNote = decision.summary || '';
           notes.unshift(`AI 决策（${decision.summary || '无摘要'}）`);
         }
       } else {
@@ -441,6 +443,7 @@ export async function runOptimizer(): Promise<OptimizeResult> {
         totalApplied.push(a);
       });
       notes.unshift('AI 未产出有效变更，已回退纯代码保守兜底');
+      aiNote = 'AI 不可用，已按代码保守策略兜底调整挡位';
       mode = 'code-fallback';
     } else {
       notes.push('无满足条件的格需要调整');
@@ -453,9 +456,11 @@ export async function runOptimizer(): Promise<OptimizeResult> {
 
   const newJson = JSON.stringify({ entries });
   setSetting('tiers_default_json', newJson);
+  const detail = totalApplied.map((a) => `${a.taskType}/${a.complexity}: ${a.from} → ${a.to}（${a.reason}）`).join('\n');
+  const reason = (aiNote ? `【说明】${aiNote}\n` : '') + detail;
   getDb()
     .prepare(`INSERT INTO optimizer_log (action, reason, previous_tiers_json, new_tiers_json) VALUES (?, ?, ?, ?)`)
-    .run(trustAi ? 'ai_tune' : 'ai_guarded_tune', totalApplied.map((a) => `${a.taskType}/${a.complexity}: ${a.from} → ${a.to}（${a.reason}）`).join('\n'), previousJson, newJson);
+    .run(trustAi ? 'ai_tune' : 'ai_guarded_tune', reason, previousJson, newJson);
 
   return { enabled: true, ran: true, mode, changed: totalApplied.length, rationale: notes, previousJson, newJson };
 }

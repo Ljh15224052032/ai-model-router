@@ -168,7 +168,7 @@ export function registerAdmin(app: FastifyInstance) {
     const current = getSetting('tiers_default_json') ?? '';
     setSetting('tiers_default_json', t.previous_tiers_json);
     db.prepare(`INSERT INTO optimizer_log (action, reason, previous_tiers_json, new_tiers_json) VALUES ('rollback', ?, ?, ?)`)
-      .run(`回滚自进化 #{${t.id}}: ${t.reason ?? ''}`, current, t.previous_tiers_json);
+      .run(`【说明】回滚到 #{${t.id}}（${t.action}）之前的挡位设置。\n${t.reason ?? ''}`, current, t.previous_tiers_json);
     return { success: true, rolledBackId: t.id, restoredTiers: t.previous_tiers_json };
   });
 

@@ -195,6 +195,12 @@ export function SelfEvolve() {
             <div className="-mx-1 space-y-2">
               {info.logs.map((l) => {
                 const isRollTarget = info.rollbackTarget?.id === l.id;
+                const lines = (l.reason ?? '')
+                  .split('\n')
+                  .map((s) => s.trim())
+                  .filter(Boolean);
+                const head = lines[0]?.replace(/^【说明】/, '').trim() || '—';
+                const rest = lines.slice(1);
                 return (
                   <div key={l.id} className={`rounded-lg border bg-panel2/60 ${isRollTarget ? 'border-accent/40' : 'border-line'}`}>
                     <button
@@ -205,19 +211,26 @@ export function SelfEvolve() {
                       <Tag color={l.action === 'rollback' ? 'warn' : l.action === 'ai_guarded_tune' || l.action === 'ai_tune' ? 'ok' : 'accent'}>
                         {MODE_LABEL[l.action] ?? l.action}
                       </Tag>
-                      <span className="min-w-0 flex-1 truncate text-xs text-ink/80">{l.reason || '—'}</span>
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">{head}</span>
                       <span className="shrink-0 font-mono text-[11px] text-dim">{l.created_at}</span>
                       {isRollTarget && <Tag color="accent">可回滚</Tag>}
                     </button>
                     {expanded === l.id && (
-                      <div className="grid grid-cols-2 gap-2 border-t border-line p-3">
-                        <div className="rounded-md border border-line bg-panel p-2">
-                          <div className="mb-1 font-mono text-[11px] text-dim">改动前档位</div>
-                          <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all text-[11px] text-ink/80">{l.previous_tiers_json ?? '（无）'}</pre>
-                        </div>
-                        <div className="rounded-md border border-line bg-panel p-2">
-                          <div className="mb-1 font-mono text-[11px] text-dim">改动后档位</div>
-                          <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all text-[11px] text-ink/80">{l.new_tiers_json ?? '（无）'}</pre>
+                      <div className="border-t border-line p-3">
+                        {rest.length ? (
+                          <div className="mb-2 space-y-0.5 text-xs text-ink/70">
+                            {rest.map((r, i) => <div key={i}>· {r}</div>)}
+                          </div>
+                        ) : null}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="rounded-md border border-line bg-panel p-2">
+                            <div className="mb-1 font-mono text-[11px] text-dim">改动前档位</div>
+                            <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all text-[11px] text-ink/80">{l.previous_tiers_json ?? '（无）'}</pre>
+                          </div>
+                          <div className="rounded-md border border-line bg-panel p-2">
+                            <div className="mb-1 font-mono text-[11px] text-dim">改动后档位</div>
+                            <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all text-[11px] text-ink/80">{l.new_tiers_json ?? '（无）'}</pre>
+                          </div>
                         </div>
                       </div>
                     )}
