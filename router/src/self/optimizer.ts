@@ -227,10 +227,21 @@ ${catalogJson}`;
   );
 
   const raw = await new Response(res.bodyStream).text();
-  if (res.status >= 400) return null;
+  if (res.status >= 400) {
+    let extra = '';
+    try {
+      const j = JSON.parse(raw) as { error?: { message?: unknown } };
+      if (typeof j?.error?.message === 'string' && j.error.message) extra = ` · ${j.error.message.slice(0, 120)}`;
+    } catch {
+      /* 忽略非 JSON 错误体 */
+    }
+    throw new Error(`上游返回 ${res.status}${extra}`);
+  }
   const parsed = JSON.parse(raw) as { choices?: Array<{ message?: { content?: string } }> };
   const content = parsed.choices?.[0]?.message?.content ?? '';
-  return parseAiDecision(content);
+  const dec = parseAiDecision(content);
+  if (!dec) throw new Error('LLM 未返回合法 JSON / 无有效变更');
+  return dec;
 }
 
 function parseAiDecision(content: string): AiDecision | null {
@@ -424,8 +435,6 @@ export async function runOptimizer(): Promise<OptimizeResult> {
           aiNote = decision.summary || '';
           notes.unshift(`AI 决策（${decision.summary || '无摘要'}）`);
         }
-      } else {
-        notes.push('LLM 未返回合法决策（失败/超时/非法 JSON），静默跳过');
       }
     } catch (e) {
       notes.push(`LLM 决策失败：${(e as Error).message}`);
@@ -446,7 +455,7 @@ export async function runOptimizer(): Promise<OptimizeResult> {
       aiNote = 'AI 不可用，已按代码保守策略兜底调整挡位';
       mode = 'code-fallback';
     } else {
-      notes.push('无满足条件的格需要调整');
+      notes.push('代码兜底未发现可调整的格');
     }
   }
 
